@@ -22,52 +22,124 @@
 	int		iEstadisticas[]			:	Arreglo con el numero de veces que aparecen las palabras en el diccionario
 	int &	iNumElementos			:	Numero de elementos en el diccionario
 ******************************************************************************************************************/
+
 void Diccionario(char* szNombre, char szPalabras[][TAMTOKEN], int iEstadisticas[], int& iNumElementos)
 {
-    FILE* fp = fopen(szNombre, "rt");
-    if (fp == NULL)
+    FILE* fp;
+    errno_t err = fopen_s(&fp, szNombre, "rt");
+    if (err != 0 || fp == NULL)
     {
         iNumElementos = 0;
         return;
     }
-    char palabra[TAMTOKEN];
+
     iNumElementos = 0;
-    while (fscanf(fp, "%49s", palabra) == 1 && iNumElementos < NUMPALABRAS)
+    char palabra[TAMTOKEN];
+    int idx = 0;
+    int c;
+
+    while ((c = fgetc(fp)) != EOF)
     {
+        int Separar = 0;
 
-        LimpiaPalabra(palabra);
-
-        if (palabra[0] != '\0')
+        if (c == ' ' || c == '\t' || c == '\n' || c == '\r' ||
+            c == ',' || c == ';' || c == '(' || c == ')' || c == '.')
         {
-            for (int j = 0; palabra[j]; j++)
+            Separar = 1;
+        }
+
+        if (Separar == 0)
+        {
+            if (idx < TAMTOKEN - 1)
             {
-                palabra[j] = tolower(palabra[j]);
+                palabra[idx] = (char)c;
+                idx++;
             }
-            int existe = BuscaPal(palabra, szPalabras, iNumElementos);
-            if (existe != -1)
+        }
+        else
+        {
+            if (idx > 0)
             {
-                iEstadisticas[existe]++;
+                palabra[idx] = '\0';
+                idx = 0;
+                int j;
+                for (j = 0; palabra[j]; j++)
+                    palabra[j] = tolower(palabra[j]);
+
+                int pos = -1;
+                int i = 0;
+                while (i < iNumElementos && pos == -1)
+                {
+                    if (strcmp(palabra, szPalabras[i]) == 0)
+                    {
+                        pos = i;
+                    }
+                    i++;
+                }
+
+                if (pos != -1)
+                {
+                    iEstadisticas[pos]++;
+                }
+                else
+                {
+                    if (iNumElementos < NUMPALABRAS)
+                    {
+                        strcpy_s(szPalabras[iNumElementos], TAMTOKEN, palabra);
+                        iEstadisticas[iNumElementos] = 1;
+                        iNumElementos++;
+                    }
+                }
             }
-            else
+        }
+    }
+
+    if (idx > 0)
+    {
+        palabra[idx] = '\0';
+
+        int j;
+        for (j = 0; palabra[j]; j++)
+        {
+            palabra[j] = tolower(palabra[j]);
+        }
+        int pos = -1;
+        int i = 0;
+        while (i < iNumElementos && pos == -1)
+        {
+            if (strcmp(palabra, szPalabras[i]) == 0)
             {
-                strcpy(szPalabras[iNumElementos], palabra);
+                pos = i;
+            }
+            i++;
+        }
+
+        if (pos != -1) {
+            iEstadisticas[pos]++;
+        }
+        else {
+            if (iNumElementos < NUMPALABRAS) {
+                strcpy_s(szPalabras[iNumElementos], TAMTOKEN, palabra);
                 iEstadisticas[iNumElementos] = 1;
                 iNumElementos++;
             }
         }
     }
+
     fclose(fp);
 
-    for (int i = 0; i < iNumElementos - 1; i++)
+    int i, k;
+    for (i = 0; i < iNumElementos - 1; i++)
     {
-        for (int k = i + 1; k < iNumElementos; k++)
+        for (k = i + 1; k < iNumElementos; k++)
         {
             if (strcmp(szPalabras[i], szPalabras[k]) > 0)
             {
                 char temp[TAMTOKEN];
-                strcpy(temp, szPalabras[i]);
-                strcpy(szPalabras[i], szPalabras[k]);
-                strcpy(szPalabras[k], temp);
+                strcpy_s(temp, TAMTOKEN, szPalabras[i]);
+                strcpy_s(szPalabras[i], TAMTOKEN, szPalabras[k]);
+                strcpy_s(szPalabras[k], TAMTOKEN, temp);
+
                 int aux = iEstadisticas[i];
                 iEstadisticas[i] = iEstadisticas[k];
                 iEstadisticas[k] = aux;
@@ -75,59 +147,7 @@ void Diccionario(char* szNombre, char szPalabras[][TAMTOKEN], int iEstadisticas[
         }
     }
 }
-void LimpiaPalabra(char palabra[])
-{
-    while (palabra[0] == ',' || palabra[0] == '.' || palabra[0] == ';' || palabra[0] == ':' || palabra[0] == '?' || palabra[0] == '!' || palabra[0] == '¡' || palabra[0] == '¿' || palabra[0] == '(' || palabra[0] == ')' || palabra[0] == '"' || palabra[0] == '\'')
-    {
-        int i = 0;
-        while (palabra[i])
-        {
-            palabra[i] = palabra[i + 1];
-            i++;
-        }
-    }
 
-    int len = strlen(palabra);
-    while (len > 0 && (palabra[len - 1] == ',' || palabra[len - 1] == '.' || palabra[len - 1] == ';' || palabra[len - 1] == ':' || palabra[len - 1] == '?' || palabra[len - 1] == '!' || palabra[len - 1] == '¡' || palabra[len - 1] == '¿' || palabra[len - 1] == '(' || palabra[len - 1] == ')' || palabra[len - 1] == '"' || palabra[len - 1] == '\''))
-    {
-        palabra[len - 1] = '\0';
-        len--;
-    }
-}
-int BuscaPal(char palabra[], char szPalabras[][TAMTOKEN], int n)
-{
-    for (int i = 0; i < n; i++)
-    {
-        if (strcmp(palabra, szPalabras[i]) == 0)
-        {
-            return i;
-        }
-    }
-    return -1;
-}
-void Corrige(char archivo[], char szPalabras[][TAMTOKEN], int iEstadisticas[], int n)
-{
-    FILE* fp = fopen(archivo, "rt");
-    if (fp == NULL)
-    {
-        return;
-    }
-    char palabra[TAMTOKEN];
-    while (fscanf(fp, "%49s", palabra) == 1)
-    {
-        LimpiaPalabra(palabra);
-        for (int i = 0; palabra[i]; i++)
-        {
-            palabra[i] = tolower(palabra[i]);
-        }
-        int pos = BuscaPal(palabra, szPalabras, n);
-        if (pos != -1)
-        {
-            iEstadisticas[pos]++;
-        }
-    }
-    fclose(fp);
-}
 
 
 /*****************************************************************************************************************
