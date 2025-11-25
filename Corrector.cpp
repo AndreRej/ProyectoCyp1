@@ -149,38 +149,6 @@ void Diccionario(char* szNombre, char szPalabras[][TAMTOKEN], int iEstadisticas[
     }
 }
 
-
-
-/*****************************************************************************************************************
-	ListaCandidatas: Esta funcion recupera desde el diccionario las palabras validas y su peso
-	Regresa las palabras ordenadas por su peso
-	char	szPalabrasSugeridas[][TAMTOKEN],	//Lista de palabras clonadas
-	int		iNumSugeridas,						//Lista de palabras clonadas
-	char	szPalabras[][TAMTOKEN],				//Lista de palabras del diccionario
-	int		iEstadisticas[],					//Lista de las frecuencias de las palabras
-	int		iNumElementos,						//Numero de elementos en el diccionario
-	char	szListaFinal[][TAMTOKEN],			//Lista final de palabras a sugerir
-	int		iPeso[],							//Peso de las palabras en la lista final
-	int &	iNumLista)							//Numero de elementos en la szListaFinal
-******************************************************************************************************************/
-void	ListaCandidatas		(
-	char	szPalabrasSugeridas[][TAMTOKEN],	//Lista de palabras clonadas
-	int		iNumSugeridas,						//Lista de palabras clonadas
-	char	szPalabras[][TAMTOKEN],				//Lista de palabras del diccionario
-	int		iEstadisticas[],					//Lista de las frecuencias de las palabras
-	int		iNumElementos,						//Numero de elementos en el diccionario
-	char	szListaFinal[][TAMTOKEN],			//Lista final de palabras a sugerir
-	int		iPeso[],							//Peso de las palabras en la lista final
-	int &	iNumLista)							//Numero de elementos en la szListaFinal
-{
-
-	//Sustituya estas lineas por su c�digo
-	strcpy(szListaFinal[0], szPalabrasSugeridas[ 0] ); //la palabra candidata
-	iPeso[0] = iEstadisticas[0];			// el peso de la palabra candidata
-	
-	iNumLista = 1;							//Una sola palabra candidata
-}
-
 /*****************************************************************************************************************
 	ClonaPalabras: toma una palabra y obtiene todas las combinaciones y permutaciones requeridas por el metodo
 	char *	szPalabraLeida,						// Palabra a clonar
@@ -285,6 +253,64 @@ void	ClonaPalabras(
                 strcpy(temp, szPalabrasSugeridas[i]);
                 strcpy(szPalabrasSugeridas[i], szPalabrasSugeridas[j]);
                 strcpy(szPalabrasSugeridas[j], temp);
+            }
+        }
+    }
+}
+
+/*****************************************************************************************************************
+    ListaCandidatas: Esta funcion recupera desde el diccionario las palabras validas y su peso
+    Regresa las palabras ordenadas por su peso
+    char	szPalabrasSugeridas[][TAMTOKEN],	//Lista de palabras clonadas
+    int		iNumSugeridas,						//Lista de palabras clonadas
+    char	szPalabras[][TAMTOKEN],				//Lista de palabras del diccionario
+    int		iEstadisticas[],					//Lista de las frecuencias de las palabras
+    int		iNumElementos,						//Numero de elementos en el diccionario
+    char	szListaFinal[][TAMTOKEN],			//Lista final de palabras a sugerir
+    int		iPeso[],							//Peso de las palabras en la lista final
+    int &	iNumLista)							//Numero de elementos en la szListaFinal
+******************************************************************************************************************/
+void	ListaCandidatas(
+    char	szPalabrasSugeridas[][TAMTOKEN],	//Lista de palabras clonadas
+    int		iNumSugeridas,						//Lista de palabras clonadas
+    char	szPalabras[][TAMTOKEN],				//Lista de palabras del diccionario
+    int		iEstadisticas[],					//Lista de las frecuencias de las palabras
+    int		iNumElementos,						//Numero de elementos en el diccionario
+    char	szListaFinal[][TAMTOKEN],			//Lista final de palabras a sugerir
+    int		iPeso[],							//Peso de las palabras en la lista final
+    int& iNumLista)							//Numero de elementos en la szListaFinal
+{
+    iNumLista = 0;
+    for (int i = 0; i < iNumSugeridas; i++)
+    {
+        int esRepetida = 0;
+        if (i > 0)
+        {
+            if (strcmp(szPalabrasSugeridas[i], szPalabrasSugeridas[i - 1]) == 0)
+            {
+                esRepetida = 1;
+            }
+        }
+
+        if (esRepetida == 0)
+        {
+            int encontradoEnDiccionario = -1;
+            int j = 0;
+
+            while (j < iNumElementos && encontradoEnDiccionario == -1)
+            {
+                if (strcmp(szPalabrasSugeridas[i], szPalabras[j]) == 0)
+                {
+                    encontradoEnDiccionario = j;
+                }
+                j++;
+            }
+
+            if (encontradoEnDiccionario != -1)
+            {
+                strcpy(szListaFinal[iNumLista], szPalabras[encontradoEnDiccionario]);
+                iPeso[iNumLista] = iEstadisticas[encontradoEnDiccionario];
+                iNumLista++;
             }
         }
     }
