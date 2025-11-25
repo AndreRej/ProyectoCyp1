@@ -11,6 +11,7 @@
 
 
 #include "stdafx.h"
+#include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include "corrector.h"
@@ -187,11 +188,104 @@ void	ListaCandidatas		(
 	int &	iNumSugeridas)						//Numero de elementos en la lista
 ******************************************************************************************************************/
 void	ClonaPalabras(
-	char *	szPalabraLeida,						// Palabra a clonar
-	char	szPalabrasSugeridas[][TAMTOKEN], 	//Lista de palabras clonadas
-	int &	iNumSugeridas)						//Numero de elementos en la lista
+	char *szPalabraLeida,						// Palabra a clonar
+	char szPalabrasSugeridas[][TAMTOKEN], 	//Lista de palabras clonadas
+	int & iNumSugeridas)						//Numero de elementos en la lista
 {
-	//Sustituya estas lineas por su c�digo
-	strcpy(szPalabrasSugeridas[0], szPalabraLeida); //lo que sea que se capture, es sugerencia
-	iNumSugeridas = 1;							//Una sola palabra sugerida
+    char ALFABETO[] = "abcdefghijklmnopqrstuvwxyz\xf1\xe1\xe9\xed\xf3\xfa";
+    int len = strlen(szPalabraLeida);
+    int lenAlf = strlen(ALFABETO);
+    iNumSugeridas = 0;
+
+	strcpy(szPalabrasSugeridas[iNumSugeridas], szPalabraLeida);
+	iNumSugeridas++;
+    if (len > 1)
+    {
+        for (int i = 0; i < len; i++)
+        {
+            char copia[TAMTOKEN];
+            int k = 0;
+
+            for (int j = 0; j < len; j++)
+            {
+                if (j != i)
+                {
+                    copia[k] = szPalabraLeida[j];
+                    k++;
+                }
+            }
+            copia[k] = '\0';
+            strcpy(szPalabrasSugeridas[iNumSugeridas], copia);
+            iNumSugeridas++;
+        }
+    }
+    for (int i = 0; i < len - 1; i++)
+    {
+        char copia[TAMTOKEN];
+        strcpy(copia, szPalabraLeida);
+
+        char tmp = copia[i];
+        copia[i] = copia[i + 1];
+        copia[i + 1] = tmp;
+
+        strcpy(szPalabrasSugeridas[iNumSugeridas], copia);
+        iNumSugeridas++;
+    }
+
+    for (int i = 0; i < len; i++)
+    {
+        for (int a = 0; a < lenAlf; a++)
+        {
+            char copia[TAMTOKEN];
+            strcpy(copia, szPalabraLeida);
+
+            copia[i] = ALFABETO[a];
+
+            strcpy(szPalabrasSugeridas[iNumSugeridas], copia);
+            iNumSugeridas++;
+        }
+    }
+
+    if (len + 1 < TAMTOKEN)
+    {
+        for (int i = 0; i <= len; i++)
+        {
+            for (int a = 0; a < lenAlf; a++)
+            {
+                char copia[TAMTOKEN];
+                int k = 0;
+
+                for (int j = 0; j < i; j++)
+                {
+                    copia[k] = szPalabraLeida[j];
+                    k++;
+                }
+                copia[k] = ALFABETO[a];
+                k++;
+
+                for (int j = i; j < len; j++)
+                {
+                    copia[k] = szPalabraLeida[j];
+                    k++;
+                }
+                copia[k] = '\0';
+                strcpy(szPalabrasSugeridas[iNumSugeridas], copia);
+                iNumSugeridas++;
+            }
+        }
+    }
+
+    for (int i = 0; i < iNumSugeridas - 1; i++)
+    {
+        for (int j = i + 1; j < iNumSugeridas; j++)
+        {
+            if (strcmp(szPalabrasSugeridas[i], szPalabrasSugeridas[j]) > 0)
+            {
+                char temp[TAMTOKEN];
+                strcpy(temp, szPalabrasSugeridas[i]);
+                strcpy(szPalabrasSugeridas[i], szPalabrasSugeridas[j]);
+                strcpy(szPalabrasSugeridas[j], temp);
+            }
+        }
+    }
 }
