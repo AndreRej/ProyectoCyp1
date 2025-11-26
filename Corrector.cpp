@@ -314,4 +314,22 @@ void	ListaCandidatas(
             }
         }
     }
+
+    for (int i = 0; i < iNumLista - 1; i++)
+    {
+        for (int j = i + 1; j < iNumLista; j++)
+        {
+            if (iPeso[j] > iPeso[i])
+            {
+                int tempPeso = iPeso[i];
+                iPeso[i] = iPeso[j];
+                iPeso[j] = tempPeso;
+
+                char tempPalabra[TAMTOKEN];
+                strcpy(tempPalabra, szListaFinal[i]);
+                strcpy(szListaFinal[i], szListaFinal[j]);
+                strcpy(szListaFinal[j], tempPalabra);
+            }
+        }
+    }
 }
